@@ -16,26 +16,33 @@ Once you have a result that looks roughly like "raw-lines-example.mp4", you'll n
 
 ### Reflection
 
-### 1. Describe your pipeline. As part of the description, explain how you modified the draw_lines() function.
+### 1. Pipline for detecting the Driving Lane
+
+The tools we have provided from the udacity groupe are:
+
+* color section
+* grayscaling
+* Gaussian Smoothing
+* Canny Edge Detection
+* Hough Transform Line Detection
+
+The Your goal is piece together a pipeline to detect the line segments in the image, then average/extrapolate them and draw them onto the image for display (as below). Once you have a working pipeline, try it out on the video stream below.
 
 My pipeline consisted of 5 steps. First, I converted the images to grayscale, then I .... 
 
 In order to draw a single line on the left and right lanes, I modified the draw_lines() function by ...
 
-If you'd like to include images to show how the pipeline works, here is how to include an image: 
-
-![alt text][image1]
+### 2. Testing the pipline for Pictures and Videos
 
 
-### 2. Identify potential shortcomings with your current pipeline
-
+### 3. Potential Shortcomings
 
 One potential shortcoming would be what would happen when ... 
 
 Another shortcoming could be ...
 
 
-### 3. Suggest possible improvements to your pipeline
+### 4. Possible Improvements
 
 A possible improvement would be to ...
 
