@@ -7,11 +7,6 @@ Once you have a result that looks roughly like "raw-lines-example.mp4", you'll n
 * Make a pipeline that finds lane lines on the road
 * Reflect on your work in a written report
 
-
-[//]: # (Image References)
-
-[image1]: ./examples/grayscale.jpg "Grayscale"
-
 ---
 
 ### 1. Pipline for detecting the Driving Lane
@@ -28,111 +23,28 @@ The  goal was to piece together a pipeline to detect the line segments in the im
 
 My pipeline consists of the definition of an function file, where every function that is needed is included. The function files is called FUNCTIONS.py.
 
-import cv2
-import numpy as np
-import matplotlib.pyplot as plt
-import math
+My Pipline for Processing a single picture is integrated in the Function "def process_image"
+
+def process_image(image):
+
+    imshape = image.shape
+    gray = functions.grayscale(image)
+    blur_gray = functions.gaussian_blur(gray, 5)
+    canny_blur = functions.canny(blur_gray, 100, 200)
+    vertices = np.array([[(50, imshape[0]), (450, 320), (500, 320), (900, imshape[0])]], dtype=np.int32)
+    region_masked = functions.region_of_interest(canny_blur, vertices)
+    hough_picture = functions.hough_lines(region_masked, 2, np.pi / 180, 20, 50, 30)
+
+    result = functions.weighted_img(hough_picture, image)
+    return result
+
+First, the shape of the image is figured out to get the heigth and weidth of the picutre. With the grayscale function, the picture is tourned into gray colors, after that the picture will be blurred with the gaussian blur function. This is the preprocessing befor the Canny function can be applied to the picture. The canny function detects the edges in the picture and helps to figure out the step between a line on the road and the road. Befor we find the lines we have to figure out a frame in the picture, where we expect the lanes. We are doing that with the region_masked function where we define a polygon for the lane detection. The last step is the hough line detection, where we converting our image in the hough space. In this function we try to find a line through all the pixels on the road line segment. When we have found the lines, we can draw them into the picture.
+
+The hough alogirhtm gives back points for a lot of lines that are drawn in the picture. So right now, we would have a lot of different lines, but we just want one line. In order to to that I modified the draw_lines() function by adding a calculation for the slope for left and right lines. After that i wanted to figure out just one line, that is the average line out of all these lines. With this algorithm i just get 4 points, 2 for the left lane and two for the right one.
 
 
-
-def grayscale(img):
-    """Applies the Grayscale transform
-    This will return an image with only one color channel
-    but NOTE: to see the returned image as grayscale
-    (assuming your grayscaled image is called 'gray')
-    you should call plt.imshow(gray, cmap='gray')"""
-    return cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
-    # Or use BGR2GRAY if you read an image with cv2.imread()
-    # return cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-
-
-def canny(img, low_threshold, high_threshold):
-    """Applies the Canny transform"""
-    return cv2.Canny(img, low_threshold, high_threshold)
-
-
-def gaussian_blur(img, kernel_size):
-    """Applies a Gaussian Noise kernel"""
-    return cv2.GaussianBlur(img, (kernel_size, kernel_size), 0)
-
-
-def region_of_interest(img, vertices):
-    """
-    Applies an image mask.
-
-    Only keeps the region of the image defined by the polygon
-    formed from `vertices`. The rest of the image is set to black.
-    """
-    # defining a blank mask to start with
-    mask = np.zeros_like(img)
-
-    # defining a 3 channel or 1 channel color to fill the mask with depending on the input image
-    if len(img.shape) > 2:
-        channel_count = img.shape[2]  # i.e. 3 or 4 depending on your image
-        ignore_mask_color = (255,) * channel_count
-    else:
-        ignore_mask_color = 255
-
-    # filling pixels inside the polygon defined by "vertices" with the fill color
-    cv2.fillPoly(mask, vertices, ignore_mask_color)
-
-    # returning the image only where mask pixels are nonzero
-    masked_image = cv2.bitwise_and(img, mask)
-    return masked_image
-
-
-def draw_lines(img, lines, color=[255, 0, 0], thickness=5):
-    """
-    NOTE: this is the function you might want to use as a starting point once you want to
-    average/extrapolate the line segments you detect to map out the full
-    extent of the lane (going from the result shown in raw-lines-example.mp4
-    to that shown in P1_example.mp4).
-
-    Think about things like separating line segments by their
-    slope ((y2-y1)/(x2-x1)) to decide which segments are part of the left
-    line vs. the right line.  Then, you can average the position of each of
-    the lines and extrapolate to the top and bottom of the lane.
-
-    This function draws `lines` with `color` and `thickness`.
-    Lines are drawn on the image inplace (mutates the image).
-    If you want to make the lines semi-transparent, think about combining
-    this function with the weighted_img() function below
-    """
-    for line in lines:
-        for x1, y1, x2, y2 in line:
-            cv2.line(img, (x1, y1), (x2, y2), color, thickness)
-            plt.imshow(img)
-
-
-
-def hough_lines(img, rho, theta, threshold, min_line_len, max_line_gap):
-    """
-    `img` should be the output of a Canny transform.
-
-    Returns an image with hough lines drawn.
-    """
-    lines_hough = cv2.HoughLinesP(img, rho, theta, threshold, np.array([]), minLineLength=min_line_len, maxLineGap=max_line_gap)
-    line_img = np.zeros((img.shape[0], img.shape[1], 3), dtype=np.uint8)
-    draw_lines1(line_img, lines_hough)
-
-    return line_img
-
-def weighted_img(img, initial_img, alpha=.8, beta=1., gamma=0.):
-    """
-    `img` is the output of the hough_lines(), An image with lines drawn on it.
-    Should be a blank image (all black) with lines drawn on it.
-
-    `initial_img` should be the image before any processing.
-
-    The result image is computed as follows:
-
-    initial_img * alpha + img * beta + gamma
-    NOTE: initial_img and img must be the same shape!
-    """
-    return cv2.addWeighted(initial_img, alpha, img, beta, gamma)
-
-
-def draw_lines1(img, lines, color=[255, 0, 0], thickness=8):
+    
+    def draw_lines1(img, lines, color=[255, 0, 0], thickness=8):
     """
     NOTE: this is the function you might want to use as a starting point once you want to
     average/extrapolate the line segments you detect to map out the full
@@ -215,30 +127,35 @@ def draw_lines1(img, lines, color=[255, 0, 0], thickness=8):
     except ValueError:
         # Don't error when a line cannot be drawn
         pass
+        
+    def get_slope(x1, y1, x2, y2):
+     return float(float(y2 - y1) / float(x2 - x1))
 
-
-def get_slope(x1, y1, x2, y2):
-    return float(float(y2 - y1) / float(x2 - x1))
-
-My Pipline for Processing a single picture is integrated in the Function "def process_image"
-
-def process_image(image):
-
-    imshape = image.shape
-    gray = functions.grayscale(image)
-    blur_gray = functions.gaussian_blur(gray, 5)
-    canny_blur = functions.canny(blur_gray, 100, 200)
-    vertices = np.array([[(50, imshape[0]), (450, 320), (500, 320), (900, imshape[0])]], dtype=np.int32)
-    region_masked = functions.region_of_interest(canny_blur, vertices)
-    hough_picture = functions.hough_lines(region_masked, 2, np.pi / 180, 20, 50, 30)
-
-    result = functions.weighted_img(hough_picture, image)
-    return result
-
-
-In order to draw a single line on the left and right lanes, I modified the draw_lines() function by ...
+After drawing the lines, the original image and the two lines from the drawing function are combined again, you can see two red lines in the picture afterwards
 
 ### 2. Testing the pipline for Pictures and Videos
+
+To test the pipline i applied it to different pictures and videos. Down below you find the algorithm for including loading and postprocessing the pictures and videos
+    
+    for img_file in images:
+    # print(img_file)
+    # Skip all files starting with line.
+    if img_file[0:4] == 'line':
+        continue
+
+    image = mpimg.imread('test_images/' + img_file)
+
+    weighted = process_image(image)
+
+    plt.imshow(weighted)
+    # break
+    mpimg.imsave('output_images/lines-' + img_file, weighted)
+    
+
+[image1]: ./output_images/lines-solidWhiteCurve.jpg "solidwhite"
+
+
+
 
 
 ### 3. Potential Shortcomings
