@@ -119,6 +119,7 @@ def draw_lines1(img, lines, color=[255, 0, 0], thickness=8):
     If you want to make the lines semi-transparent, think about combining
     this function with the weighted_img() function below
     """
+    "Code for the detection from https://github.com/eosrei/CarND-P01-Lane-Lines"
     top = 320
     bottom = 550
     left_x1s = []
