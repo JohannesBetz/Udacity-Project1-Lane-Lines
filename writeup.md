@@ -151,24 +151,36 @@ To test the pipline i applied it to different pictures and videos. Down below yo
     # break
     mpimg.imsave('output_images/lines-' + img_file, weighted)
     
+    white_output = 'output_videos/white_output.mp4'
+    clip1 = VideoFileClip("test_videos/solidWhiteRight.mp4")
+    a = clip1.fl_image
+    white_clip = clip1.fl_image(process_image) #NOTE: this function expects color images!!
+    white_clip.write_videofile(white_output, audio=False)
+
+    yellow_output = 'output_videos/yellow_output.mp4'
+    clip1 = VideoFileClip("test_videos/solidYellowLeft.mp4")
+    a = clip1.fl_image
+    white_clip = clip1.fl_image(process_image) #NOTE: this function expects color images!!
+    white_clip.write_videofile(yellow_output, audio=False)
+    
 
 [image1]: ./output_images/lines-solidWhiteCurve.jpg "solidwhite"
 
 
-
-
-
 ### 3. Potential Shortcomings
 
-One potential shortcoming would be what would happen when ... 
+My code failed in the detection of the challenge video. I think this might be because of the road conditions (anything that changes/obscures the lanes will result in incorrect (or no) lane lines being detected. For example, snow, heavy rain, bright sunlight, or even a wide car/truck that (partially) obscures the lines. 
 
-Another shortcoming could be ...
-
+Second, there might be problems when the car position is changing: moving the car from left to right inside the same lane, changing lanes. I think the algorithm right now i just for straight lines, so the curve detection in the video failed.
 
 ### 4. Possible Improvements
 
-A possible improvement would be to ...
+Possible improvements
+1. Improve the "smoothing algorithm" by something more sophisticated than simply taking the weighted average of the current and previous frame's lane line
+2. Dynamically change the region of interest in response to changes in the position of the car (e.g. pitch changes when going up/down a steep hill)
+3. Dynamically change the various parameters: while current parameter values work ok for the set of images and videos provided with the project, it is most likely a classic case of overfitting. Canny and Hough parameters, the color mask values, even the blur kernel size, can/should probably be set dynamically depending on road conditions, weather etc
+4. Color Detection: Right now i just use the Canny Detection for the Edge, i should combine it with the color.
 
-Another potential improvement could be to ...
+
 
 
