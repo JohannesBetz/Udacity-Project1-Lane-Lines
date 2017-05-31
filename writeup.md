@@ -26,24 +26,23 @@ The tools we have provided from the udacity groupe are:
 
 The  goal was to piece together a pipeline to detect the line segments in the image, then average/extrapolate them and draw them onto the image for display. Once we figured out a pipline for processing an image, the goal was to apply this process to different videos
 
-My pipeline consists of the definition of an function file, where every function that is needed is included. The function files looks like the following:
+My pipeline consists of the definition of an function file, where every function that is needed is included. The function files is called FUNCTIONS.py.
 
-{
-   "cell_type": "code",
-   "execution_count": 1,
-   "metadata": {
-    "collapsed": false
-   },
-   "outputs": [],
-   "source": [
-    "#importing some useful packages\n",
-    "import matplotlib.pyplot as plt\n",
-    "import matplotlib.image as mpimg\n",
-    "import numpy as np\n",
-    "import cv2\n",
-    "%matplotlib inline"
-   ]
-  },
+My Pipline for Processing a single picture is integrated in the Function "def process_image"
+
+def process_image(image):
+
+    imshape = image.shape
+    gray = functions.grayscale(image)
+    blur_gray = functions.gaussian_blur(gray, 5)
+    canny_blur = functions.canny(blur_gray, 100, 200)
+    vertices = np.array([[(50, imshape[0]), (450, 320), (500, 320), (900, imshape[0])]], dtype=np.int32)
+    region_masked = functions.region_of_interest(canny_blur, vertices)
+    hough_picture = functions.hough_lines(region_masked, 2, np.pi / 180, 20, 50, 30)
+
+    result = functions.weighted_img(hough_picture, image)
+    return result
+
 
 In order to draw a single line on the left and right lanes, I modified the draw_lines() function by ...
 
