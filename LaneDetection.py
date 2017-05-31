@@ -4,13 +4,10 @@ import matplotlib.image as mpimg
 import functions
 import numpy as np
 import os
-import cv2
-
+from moviepy.editor import VideoFileClip
 import imageio
 imageio.plugins.ffmpeg.download()
 
-from moviepy.editor import VideoFileClip
-from IPython.display import HTML
 
 def process_image(image):
 
@@ -56,10 +53,10 @@ a = clip1.fl_image
 white_clip = clip1.fl_image(process_image) #NOTE: this function expects color images!!
 white_clip.write_videofile(yellow_output, audio=False)
 
-challenge_output = 'output_videos/extra.mp4'
-clip2 = VideoFileClip('test_videos/challenge.mp4')
-challenge_clip = clip2.fl_image(process_image)
-challenge_clip.write_videofile(challenge_output, audio=False)
+# challenge_output = 'output_videos/extra.mp4'
+# clip2 = VideoFileClip('test_videos/challenge.mp4')
+# challenge_clip = clip2.fl_image(process_image)
+# challenge_clip.write_videofile(challenge_output, audio=False)
 
 
 

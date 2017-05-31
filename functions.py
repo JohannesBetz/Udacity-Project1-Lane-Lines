@@ -2,6 +2,8 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 import math
+from numpy import arange,array,ones,linalg
+from pylab import plot,show
 
 
 
@@ -50,8 +52,20 @@ def region_of_interest(img, vertices):
     masked_image = cv2.bitwise_and(img, mask)
     return masked_image
 
+def hough_lines(img, rho, theta, threshold, min_line_len, max_line_gap):
+    """
+    `img` should be the output of a Canny transform.
 
-def draw_lines(img, lines, color=[255, 0, 0], thickness=5):
+    Returns an image with hough lines drawn.
+    """
+    lines_hough = cv2.HoughLinesP(img, rho, theta, threshold, np.array([]), minLineLength=min_line_len, maxLineGap=max_line_gap)
+    line_img = np.zeros((img.shape[0], img.shape[1], 3), dtype=np.uint8)
+    draw_lines(line_img, lines_hough)
+
+    return line_img
+
+
+def draw_lines(img, lines, color=[255, 0, 0], thickness=8):
     """
     NOTE: this is the function you might want to use as a starting point once you want to
     average/extrapolate the line segments you detect to map out the full
@@ -68,24 +82,86 @@ def draw_lines(img, lines, color=[255, 0, 0], thickness=5):
     If you want to make the lines semi-transparent, think about combining
     this function with the weighted_img() function below
     """
+    imshape = img.shape
+
+    vertices = np.array([[(50, imshape[0]), (450, 320), (500, 320), (900, imshape[0])]], dtype=np.int32)
+    left_x = []
+    left_y = []
+    right_x = []
+    right_y = []
+
+    left_x1_max = 200
+    left_y1_max = imshape[0]
+    left_x2_max = 450
+    left_y2_max = 320
+
+    right_x1_max = 500
+    right_y1_max = 320
+    right_x2_max = 870
+    right_y2_max = imshape[0]
+
+
     for line in lines:
         for x1, y1, x2, y2 in line:
-            cv2.line(img, (x1, y1), (x2, y2), color, thickness)
-            plt.imshow(img)
+
+            x_values = float(x2 - x1)
+            y_values = float(y2 - y1)
+            slope = float(y_values / x_values)
+            if slope < 0:
+                # Ignore obviously invalid lines
+                if slope > -.5 or slope < -.8:
+                    continue
+
+                left_x.append(x1)
+                left_x.append(x2)
+                left_y.append(y1)
+                left_y.append(y2)
+
+            else:
+                # Ignore obviously invalid lines
+                if slope < .5 or slope > .8:
+                    continue
+                right_x.append(x1)
+                right_x.append(x2)
+                right_y.append(y1)
+                right_y.append(y2)
+
+    right_x.append(right_x1_max)
+    right_x.append(right_x2_max)
+    right_y.append(right_y1_max)
+    right_y.append(right_y2_max)
+
+    left_x.append(left_x1_max)
+    left_x.append(left_x2_max)
+    left_y.append(left_y1_max)
+    left_y.append(left_y2_max)
+
+    x_right = np.asarray(right_x)
+    y_right = np.asarray(right_y)
+    A_right = array([x_right, ones(len(x_right))])
+    w_right = linalg.lstsq(A_right.T, y_right)[0]  # obtaining the parameters
+    line_right = w_right[0] * x_right + w_right[1]  # regression line
+
+    x_left = np.asarray(left_x)
+    y_left = np.asarray(left_y)
+    A_left = array([x_left, ones(len(x_left))])
+    w_left = linalg.lstsq(A_left.T, y_left)[0]  # obtaining the parameters
+    line_left = w_left[0] * x_left + w_left[1]  # regression line
+
+    x1_right = min(x_right)
+    x2_right = int((imshape[0] - w_right[1])/w_right[0])
+    y1_right = int(min(line_right))
+    y2_right = imshape[0]
+
+    x1_left = int((imshape[0] - w_left[1])/w_left[0])
+    x2_left =max(x_left)
+    y1_left = imshape[0]
+    y2_left = int(min(line_left))
 
 
+    cv2.line(img, (x1_right,y1_right),(x2_right,y2_right), color, thickness)
+    cv2.line(img, (x2_left, y2_left), (x1_left, y1_left), color, thickness)
 
-def hough_lines(img, rho, theta, threshold, min_line_len, max_line_gap):
-    """
-    `img` should be the output of a Canny transform.
-
-    Returns an image with hough lines drawn.
-    """
-    lines_hough = cv2.HoughLinesP(img, rho, theta, threshold, np.array([]), minLineLength=min_line_len, maxLineGap=max_line_gap)
-    line_img = np.zeros((img.shape[0], img.shape[1], 3), dtype=np.uint8)
-    draw_lines1(line_img, lines_hough)
-
-    return line_img
 
 def weighted_img(img, initial_img, alpha=.8, beta=1., gamma=0.):
     """
@@ -102,7 +178,7 @@ def weighted_img(img, initial_img, alpha=.8, beta=1., gamma=0.):
     return cv2.addWeighted(initial_img, alpha, img, beta, gamma)
 
 
-def draw_lines1(img, lines, color=[255, 0, 0], thickness=8):
+def draw_lines_test(img, lines, color=[255, 0, 0], thickness=8):
     """
     NOTE: this is the function you might want to use as a starting point once you want to
     average/extrapolate the line segments you detect to map out the full
