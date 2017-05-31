@@ -14,8 +14,6 @@ Once you have a result that looks roughly like "raw-lines-example.mp4", you'll n
 
 ---
 
-### Reflection
-
 ### 1. Pipline for detecting the Driving Lane
 
 The tools we have provided from the udacity groupe are:
@@ -26,9 +24,26 @@ The tools we have provided from the udacity groupe are:
 * Canny Edge Detection
 * Hough Transform Line Detection
 
-The Your goal is piece together a pipeline to detect the line segments in the image, then average/extrapolate them and draw them onto the image for display (as below). Once you have a working pipeline, try it out on the video stream below.
+The  goal was to piece together a pipeline to detect the line segments in the image, then average/extrapolate them and draw them onto the image for display. Once we figured out a pipline for processing an image, the goal was to apply this process to different videos
 
-My pipeline consisted of 5 steps. First, I converted the images to grayscale, then I .... 
+My pipeline consists of the definition of an function file, where every function that is needed is included. The function files looks like the following:
+
+{
+   "cell_type": "code",
+   "execution_count": 1,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [],
+   "source": [
+    "#importing some useful packages\n",
+    "import matplotlib.pyplot as plt\n",
+    "import matplotlib.image as mpimg\n",
+    "import numpy as np\n",
+    "import cv2\n",
+    "%matplotlib inline"
+   ]
+  },
 
 In order to draw a single line on the left and right lanes, I modified the draw_lines() function by ...
 
